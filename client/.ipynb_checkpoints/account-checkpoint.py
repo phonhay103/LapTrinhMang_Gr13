@@ -11,7 +11,7 @@ def get_login_status(status):
         print('Đăng nhập thành công')
         return True
     else:
-        print('Sai mã số sinh viên hoặc mật khẩu')
+        print('Error: Sai mã số sinh viên hoặc mật khẩu')
         return False
 
 def change_password(id):
@@ -20,7 +20,7 @@ def change_password(id):
     if new_pw_1 == new_pw_2:
         return pickle.dumps([id, new_pw_1])
     else:
-        print('Mật khẩu phải giống nhau')
+        print('Error: Mật khẩu phải giống nhau!')
         return None
 
 def get_change_password_status(status):
@@ -29,5 +29,5 @@ def get_change_password_status(status):
         print('Đổi mật khẩu thành công')
         return True
     else:
-        print('Lỗi không xác định')
+        print('Error: Lỗi không xác định')
         return False

@@ -1,3 +1,5 @@
 HOST = ''
 PORT = 8000
-DATABASE = 'database/users.sqlite3'
+DATABASE = 'db/users.sqlite3'
+DIR = 'data'
+EXT = 'txt'
