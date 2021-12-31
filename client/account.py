@@ -1,33 +1,34 @@
 import pickle
 
-def login():
-    id = input('Mã số sinh viên: ')
-    pw = input('Mật khẩu: ')
-    return id, pickle.dumps([id, pw]) # Client save id
+def get_login_data(id, pw): # Send
+    return pickle.dumps([100, id, pw])
 
-def get_login_status(status):
+def get_login_status(status): # Recv
     status = pickle.loads(status)
     if status[0] == 200:
-        print('Đăng nhập thành công')
         return True
     else:
-        print('Error: Sai mã số sinh viên hoặc mật khẩu')
         return False
 
-def change_password(id):
-    new_pw_1 = input('Mật khẩu mới: ')
-    new_pw_2 = input('Xác nhận mật khẩu: ')
-    if new_pw_1 == new_pw_2:
-        return pickle.dumps([id, new_pw_1])
+def get_change_password_data(id, new_pw_1, new_pw_2): # Send
+    if new_pw_1 == new_pw_2 and len(new_pw_1) > 0:
+        return pickle.dumps([101, id, new_pw_1])
     else:
-        print('Error: Mật khẩu phải giống nhau!')
         return None
 
-def get_change_password_status(status):
+def get_change_password_status(status): # Recv
     status = pickle.loads(status)
     if status[0] == 200:
-        print('Đổi mật khẩu thành công')
         return True
     else:
-        print('Error: Lỗi không xác định')
+        return False
+
+def get_logout_data(id): # Send
+    return pickle.dumps([102, id])
+
+def get_logout_status(status): # Recv
+    status = pickle.loads(status)
+    if status[0] == 200:
+        return True
+    else:
         return False
