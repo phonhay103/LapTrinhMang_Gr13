@@ -1,4 +1,13 @@
 import socket
+import streamlit as st
+import cv2
+import time
+import pyautogui
+
+from config import *
+from account import *
+
+import pickle # TEMP #
 
 ClientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
@@ -10,8 +19,6 @@ def app():
     st.title("Sổ tay sinh viên 2021")
     bg = st.empty()
     bg.image(cv2.imread('bg.png'), channels='BGR')
-    st.sidebar.header('Cổng thông tin sinh viên')
-    user_id = st.sidebar.empty()
     menus = ['Trang chủ', 'Đổi mật khẩu', 'Tra cứu', 'Tư vấn trực tuyến', 'Đăng xuất']
 
     # ================================= Log in ============================== #
@@ -34,9 +41,16 @@ def app():
                     containers[4].warning(f'Mã số sinh viên phải có {MSSV_CHARS} ký tự!')
                 else: # Send to server 
                     data = get_login_data(id, pw)
-                    ClientSocket.send(data)
-                    status = ClientSocket.recv(1024) # Blocking ?
-                    # status = pickle.dumps([200, 'Success']) # TEMP #
+                    try:
+                        ClientSocket.send(data)
+                        status = ClientSocket.recv(1024)
+                        st.write(status)
+                        # print(pickle.loads(status))
+                    except:
+                        print("Error1")
+                    #     status = pickle.dumps([500, 'Error'])
+    
+                    status = pickle.dumps([500, 'Success']) # TEMP #
                     if get_login_status(status):
                         st.session_state.logged_in = True
                         st.session_state.id = id
@@ -53,10 +67,9 @@ def app():
 
     # ================================= Menus =============================== #
     options = st.sidebar.empty()
-    option = None
+    option = menus[0]
     if st.session_state.logged_in:
-        user_id.write(f'MSSV: {st.session_state.id}')
-        if option == options[0]:
+        if option == menus[0]:
             option = options.selectbox('Menu', menus, index=0)
         else:
             option = options.selectbox('Menu', menus)
@@ -79,9 +92,9 @@ def app():
             if changeBtn:
                 data = get_change_password_data(st.session_state.id, new_pw_1, new_pw_2)
                 if data:  # Send to server 
-                    ClientSocket.send(data)
-                    status = ClientSocket.recv(1024) # Blocking ?
-                    # status = pickle.dumps([200, 'Success']) # TEMP #
+                    # ClientSocket.send(data)
+                    # status = ClientSocket.recv(1024) # Blocking ?
+                    status = pickle.dumps([200, 'Success']) # TEMP #
                     if get_change_password_status(status):
                         # Remove widgets
                         containers[3].success('Đổi mật khẩu thành công')
@@ -114,9 +127,9 @@ def app():
         if option == menus[4]:
             container = st.sidebar.empty()
             data = get_logout_data(st.session_state.id)
-            ClientSocket.send(data)
-            status = ClientSocket.recv(1024) # Blocking ?
-            # status = pickle.dumps([200, 'S']) # TEMP #
+            # ClientSocket.send(data)
+            # status = ClientSocket.recv(1024) # Blocking ?
+            status = pickle.dumps([200, 'S']) # TEMP #
             if get_logout_status(status):
                 st.session_state.logged_in = False
                 del st.session_state['id']
@@ -128,10 +141,9 @@ def app():
                 container.error('Đăng xuất không thành công!')
         # ============================= Log out ============================ #
 
-while True:
-    try:
-        app()
-    except:
-        break
-
-ClientSocket.close()
+try:
+    app()
+except:
+    print('Exit')
+    ClientSocket.close()
+    exit()

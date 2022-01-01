@@ -1,42 +1,85 @@
 import socket
-import threading
 import pickle
+import selectors
+import types
 
 from account import *
 from config import *
 from search import *
 
-ServerSideSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ThreadCount = 0
 tree = create_tree()
-user_id = None
+sel = selectors.DefaultSelector()
+ServerSideSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+def accept_wrapper(sock):
+    conn, addr = sock.accept()
+    print('Accepted connection from', addr)
+    conn.setblocking(False)
+    data = types.SimpleNamespace(addr=addr, data=None, id=None)
+    events = selectors.EVENT_READ | selectors.EVENT_WRITE
+    sel.register(conn, events, data=data)
+
+def service_connection(key, mask):
+    sock = key.fileobj
+    data = key.data
+
+    # Recv
+    if mask & selectors.EVENT_READ:
+        try:
+            recv_data = sock.recv(1024)
+        except:
+            recv_data = None
+
+        if recv_data:
+            try:
+                data.data = pickle.loads(recv_data)
+                print('Receiving:', data.data)
+            except:
+                data.data = [500, "Error"]
+        else:
+            print('Closing connection to', data.addr)
+            sel.unregister(sock)
+            sock.close()
+
+    # Send
+    if mask & selectors.EVENT_WRITE:
+        if data.data:
+            print('Parsing:', data.data)
+            if data.data[0] == 100:
+                data.id, status = get_login_status(data.data[1], data.data[2])
+            elif data.data[0] == 101:
+                status = get_change_password_status(data.id, data.data[1], data.data[2]) # TODO
+            elif data.data[0] == 102:
+                status = get_logout_status(data.id, data.data[1]) # TODO
+                data.id = None
+            elif data.data[0] == 103:
+                status = search_for_index(tree, data.data[1])
+            elif data.data[0] == 104:
+                pass
+            else:
+                status = pickle.dumps([500, 'Error'])
+            print(pickle.loads(status))
+            data.data = None
+            try:
+                ServerSideSocket.send(status)
+            except:
+                pass
 
 try:
     ServerSideSocket.bind((HOST, PORT))
 except socket.error as e:
     print(str(e))
+    exit()
 
-print('Socket is listening..')
-ServerSideSocket.listen(5)
-conn, add = ServerSideSocket.accept()
+print('Listening on', (HOST, PORT))
+ServerSideSocket.listen()
+ServerSideSocket.setblocking(False)
+sel.register(ServerSideSocket, selectors.EVENT_READ, data=None)
 
 while True:
-    try: 
-        data = pickle.loads(conn.recv(1024))
-        if data[0] == 100:
-            user_id, status = get_login_status(data[1], data[2])
-        elif data[0] == 101:
-            status = get_change_password_status(user_id, data[1], data[2])
-        elif data[0] == 102:
-            status = get_logout_status(user_id, data[1])
-        elif data[0] == 103:
-            status = search_for_index(tree, data[1])
-        elif data[0] == 104:
-            pass
+    events = sel.select(timeout=None)
+    for key, mask in events:
+        if key.data is None:
+            accept_wrapper(key.fileobj)
         else:
-            status = pickle.dumps([500, 'Error'])
-
-        ServerSideSocket.send(status)
-    except:
-        conn.close()
-        break
+            service_connection(key, mask)
