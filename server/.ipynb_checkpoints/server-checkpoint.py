@@ -61,7 +61,6 @@ def service_connection(key, mask):
                 elif data.data[0] == 103:
                     print('Search:', data.id, data.addr)
                     status = search_for_index(tree, data.data[1])
-                    print('Search:', data.id, data.addr)
                 elif data.data[0] == 104:
                     print('NAN')
                     status = pickle.dumps([500, 'Error'])
@@ -75,13 +74,14 @@ def service_connection(key, mask):
             
             try:
                 sock.sendall(status)
+                print('Sent to', data.addr)
             except socket.error as e:
                 print('Cannot sent data to', data.addr)
 
 try:
     ServerSideSocket.bind((HOST, PORT))
 except socket.error as e:
-    print(e)
+    print(str(e))
     exit()
 
 print('Listening on', (HOST, PORT))

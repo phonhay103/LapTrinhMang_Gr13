@@ -23,6 +23,20 @@ send(s, [100, '20184218', '20184218'])
 
 # Test logout
 # send(s, [102, '1'])
-send(s, [103, '32'])
+# send(s, [102, '32'])
 
+# Test search
+data = pickle.dumps([103, '1'])
+s.send(data)
+msg = b''
+while True:
+    recv = s.recv(1024)
+    msg += recv
+    try:
+        data = pickle.loads(msg)
+        break
+    except:
+        print(False)
+
+print(data)
 s.close()

@@ -22,7 +22,7 @@ def create_tree(data_dir='data'):
         for file in files:
             node = Node(file, parent=r, title="Nan")
             path = _get_node_path(node)
-            with open(path + '.' + EXT, 'r', encoding='utf8') as f:
+            with open(path + '.' + EXT, 'r', encoding='utf-8') as f:
                 title = f.readline().rstrip()
                 if not title:
                     title = file
@@ -53,7 +53,7 @@ def _get_indexes_list(node):
 
 def _get_file_content(node):
     path = _get_node_path(node) + '.' + EXT
-    with open(path, 'r', encoding='utf8') as f:
+    with open(path, 'r') as f:
         data = [line.rstrip() for line in f.readlines()]
     return data
 
