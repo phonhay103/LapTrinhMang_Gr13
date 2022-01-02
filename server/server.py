@@ -45,25 +45,35 @@ def service_connection(key, mask):
     if mask & selectors.EVENT_WRITE:
         if data.data:
             print('Parsing:', data.data)
-            if data.data[0] == 100:
-                data.id, status = get_login_status(data.data[1], data.data[2])
-            elif data.data[0] == 101:
-                status = get_change_password_status(data.id, data.data[1], data.data[2]) # TODO
-            elif data.data[0] == 102:
-                status = get_logout_status(data.id, data.data[1]) # TODO
-                data.id = None
-            elif data.data[0] == 103:
-                status = search_for_index(tree, data.data[1])
-            elif data.data[0] == 104:
-                pass
-            else:
-                status = pickle.dumps([500, 'Error'])
-            print(pickle.loads(status))
-            data.data = None
             try:
-                ServerSideSocket.send(status)
-            except:
-                pass
+                if data.data[0] == 100:
+                    print('Log in:', data.id)
+                    data.id, status = get_login_status(data.data[1], data.data[2])
+                    print('Log in:', data.id)
+                elif data.data[0] == 101:
+                    print('Change Password:', data.id)
+                    status = get_change_password_status(data.id, data.data[1], data.data[2])
+                    print('Change Password:', data.id)
+                elif data.data[0] == 102:
+                    print('Logout:', data.id)
+                    data.id, status = get_logout_status(data.id, data.data[1])
+                    print('Logout:', data.id)
+                elif data.data[0] == 103:
+                    print('Search')
+                    status = search_for_index(tree, data.data[1])
+                elif data.data[0] == 104:
+                    print('NAN')
+                    status = pickle.dumps([500, 'Error'])
+                else:
+                    status = pickle.dumps([500, 'Error'])
+            except Exception as e:
+                status = pickle.dumps([500, 'Error'])
+            data.data = None
+            
+            try:
+                sock.send(status)
+            except socket.error as e:
+                print('Cannot send data to', data.addr)
 
 try:
     ServerSideSocket.bind((HOST, PORT))

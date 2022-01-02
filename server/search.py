@@ -64,4 +64,4 @@ def search_for_index(tree, name):
         contents = []
     else:
         contents = _get_file_content(node)
-    return pickle.dumps(['110', contents, indexes])
+    return pickle.dumps([110, contents, indexes])

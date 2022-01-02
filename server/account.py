@@ -65,10 +65,10 @@ def get_change_password_status(user_id, id, new_pw): # Send
 def get_logout_status(user_id, id):
     try:
         if user_id is None or user_id != id:
-            return pickle.dumps([500, 'Error'])
+            return user_id, pickle.dumps([500, 'Error'])
         elif user_id == id:
-            return pickle.dumps([200, 'Success'])
+            return None, pickle.dumps([200, 'Success'])
         else:
-            return pickle.dumps([500, 'Error'])
+            return user_id, pickle.dumps([500, 'Error'])
     except:
-        return pickle.dumps([500, 'Error'])
+        return user_id, pickle.dumps([500, 'Error'])

@@ -44,13 +44,9 @@ def app():
                     try:
                         ClientSocket.send(data)
                         status = ClientSocket.recv(1024)
-                        st.write(status)
-                        # print(pickle.loads(status))
                     except:
-                        print("Error1")
-                    #     status = pickle.dumps([500, 'Error'])
+                        status = pickle.dumps([500, 'Error']) # TEMP #
     
-                    status = pickle.dumps([500, 'Success']) # TEMP #
                     if get_login_status(status):
                         st.session_state.logged_in = True
                         st.session_state.id = id
@@ -84,6 +80,7 @@ def app():
 
         # ========================= Change password ========================= #
         if option == menus[1]:
+            bg.image(cv2.imread('bg.png'), channels='BGR')
             containers = [st.sidebar.empty() for i in range(4)]
             new_pw_1 = containers[0].text_input('Mật khẩu mới:', max_chars=PW_CHARS)
             new_pw_2 = containers[1].text_input('Xác nhận mật khẩu mới:', max_chars=PW_CHARS)
@@ -113,12 +110,14 @@ def app():
 
         # ============================= Search ============================= #
         if option == menus[2]:
+            bg.empty()
             pass
         # ============================= Search ============================= #
 
 
         # ============================== Chat ============================== #
         if option == menus[3]:
+            bg.empty()
             pass
         # ============================== Chat ============================== #
 
@@ -143,7 +142,7 @@ def app():
 
 try:
     app()
-except:
-    print('Exit')
+except socket.error as e:
+    st.text(e)
     ClientSocket.close()
     exit()
