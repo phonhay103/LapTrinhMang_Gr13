@@ -50,6 +50,8 @@ def app():
         st.session_state.show_all = False
     if 'r_id' not in st.session_state:
         st.session_state.r_id = None
+    if 'history' not in st.session_state:
+        st.session_state.history = None
     # ================================= Log in ============================== #
     if not st.session_state.logged_in:
         bg.image(cv2.imread('bg.png'), channels='BGR')
@@ -403,7 +405,11 @@ def app():
                         _, contents, indexes = data
 
                         st.markdown('\n'.join(contents), unsafe_allow_html=True)
-
+                        if len(contents) > 0:
+                            st.session_state.history = contents[0].rstrip()
+                        else:
+                            st.session_state.history = st.session_state.index
+                            
                         if indexes[0][1] == 'parent':
                             t = "Xem thêm"
                             st.text('')
@@ -434,7 +440,6 @@ def app():
             # ============================== Chat ============================== #
             elif st.session_state.option == menus[3]:
                 bg.empty()
-                
                 # Chat history
                 try:
                     ClientSocket.send(pickle.dumps([104, 'xXloadXx']))
@@ -449,6 +454,16 @@ def app():
                 except Exception as e:
                     st.exception(e)
                     data = [500, 'Error']
+
+                # Send topic
+                if st.session_state.history is not None:
+                    try:
+                        ClientSocket.send(pickle.dumps([104, st.session_state.history]))
+                        ClientSocket.recv(1024)
+                    except:
+                        st.exception(e)
+                    st.session_state.history = None
+                    st.experimental_rerun()
 
                 # Chat GUI
                 if data[0] == 110:
