@@ -1,5 +1,0 @@
-HOST = '127.0.0.1'
-PORT = 8251
-DIR = 'data'
-MSSV_CHARS = 8
-PW_CHARS = 8

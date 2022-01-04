@@ -6,6 +6,7 @@ import types
 from account import *
 from config import *
 from search import *
+from chat import *
 
 tree = create_tree()
 sel = selectors.DefaultSelector()
@@ -33,7 +34,7 @@ def service_connection(key, mask):
         if recv_data:
             try:
                 data.data = pickle.loads(recv_data)
-                print('Receiving:', data.data)
+                print('Receiving:', data.data, data.addr)
             except:
                 data.data = [500, "Error"]
         else:
@@ -44,29 +45,34 @@ def service_connection(key, mask):
     # Send
     if mask & selectors.EVENT_WRITE:
         if data.data:
-            print('Parsing:', data.data, data.addr)
+            print('Parsing:')
             try:
                 if data.data[0] == 100:
-                    print('Log in:', data.id, data.addr)
                     data.id, status = get_login_status(data.data[1], data.data[2])
                     print('Log in:', data.id, data.addr)
                 elif data.data[0] == 101:
                     print('Change Password:', data.id, data.addr)
                     status = get_change_password_status(data.id, data.data[1], data.data[2])
-                    print('Change Password:', data.id, data.addr)
                 elif data.data[0] == 102:
                     print('Logout:', data.id, data.addr)
                     data.id, status = get_logout_status(data.id, data.data[1])
-                    print('Logout:', data.id, data.addr)
                 elif data.data[0] == 103:
                     print('Search:', data.id, data.addr)
                     status = search_for_index(tree, data.data[1])
-                    print('Search:', data.id, data.addr)
                 elif data.data[0] == 104:
-                    print('NAN')
-                    status = pickle.dumps([500, 'Error'])
+                    print('Chat:', data.id, data.addr)
+                    if data.data[1] == 'xXloadXx':
+                        status = chat_load(data.id)
+                    else:
+                        status = chat_save(data.id, data.id, data.data[1])
+                elif data.data[0] == 105:
+                    if data.data[2] == 'xXloadXx':
+                        status = chat_load(data.data[1])
+                    elif data.data[2] == 'xXlistXx':
+                        status = chat_list()
+                    else:
+                        status = chat_save(ADMIN_ID, data.data[1], data.data[2])
                 else:
-                    print('Error?')
                     status = pickle.dumps([500, 'Error'])
             except Exception as e:
                 print(e)
