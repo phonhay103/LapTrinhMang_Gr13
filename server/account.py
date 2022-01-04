@@ -4,9 +4,7 @@ import pickle
 
 from config import *
 
-def _check_login(data):
-    id, pw = pickle.loads(data)
-
+def _check_login(id, pw): # Recv
     try:
         con = sql.connect(DATABASE)
         cur = con.cursor()
@@ -21,13 +19,16 @@ def _check_login(data):
         else:
             return False
     except sql.Error as er:
-        return False             
+        return False
 
-def get_login_status(data):
-    if _check_login(data):
-        return pickle.dumps([200, 'Success'])
-    else:
-        return pickle.dumps([500, 'Error'])
+def get_login_status(id, pw): # Send
+    try:
+        if _check_login(id, pw):
+            return id, pickle.dumps([200, 'Success'])
+        else:
+            return None, pickle.dumps([500, 'Error'])
+    except:
+        return None, pickle.dumps([500, 'Error'])
 
 def _get_hash_str(pw):
     pw = str(pw).encode()
@@ -35,11 +36,10 @@ def _get_hash_str(pw):
     hashed = bcrypt.hashpw(pw, salt)
     return hashed.decode()
 
-def _check_change_password(data):
-    id, new_pw = pickle.loads(data)
-    new_pw = _get_hash_str(new_pw)
-    
+def _check_change_password(id, new_pw): # Recv
     try:
+        new_pw = _get_hash_str(new_pw)
+        
         con = sql.connect(DATABASE)
         cur = con.cursor()
         query = f"UPDATE user SET password = '{new_pw}' WHERE id = {id}"
@@ -51,8 +51,24 @@ def _check_change_password(data):
 
     return True
 
-def get_change_password_status(data):
-    if _check_change_password(data):
-        return pickle.dumps([200, 'Success'])
-    else:
+def get_change_password_status(user_id, id, new_pw): # Send
+    try:
+        if user_id is None or user_id != id:
+            return pickle.dumps([500, 'Error'])
+        elif _check_change_password(id, new_pw):
+            return pickle.dumps([200, 'Success'])
+        else:
+            return pickle.dumps([500, 'Error'])
+    except:
         return pickle.dumps([500, 'Error'])
+
+def get_logout_status(user_id, id):
+    try:
+        if user_id is None or user_id != id:
+            return user_id, pickle.dumps([500, 'Error'])
+        elif user_id == id:
+            return None, pickle.dumps([200, 'Success'])
+        else:
+            return user_id, pickle.dumps([500, 'Error'])
+    except:
+        return user_id, pickle.dumps([500, 'Error'])
