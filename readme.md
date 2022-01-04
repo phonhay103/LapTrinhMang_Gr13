@@ -15,6 +15,7 @@ pip install -r requirements.txt
 
 ## Getting Started
 Run server ```bash streamlit run app.py```
+
 Run client ```bash streamlit run app.py```
 
 ## Acknowledgements
