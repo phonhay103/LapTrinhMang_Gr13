@@ -5,8 +5,9 @@ The project was developed using python 3.8.5 with the following packages.
 - Anytree
 - Pyautogui
 - Streamlit
-- Socket
+- Bcrypto
 - Pickle
+- OpenCV
 
 Installation with pip:
 ```bash
