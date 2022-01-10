@@ -1,3 +1,4 @@
 anytree==2.8.0
 pyautogui==0.9.53
 streamlit
+bcrypt
