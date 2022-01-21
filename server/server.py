@@ -10,7 +10,8 @@ from chat import *
 
 tree = create_tree()
 sel = selectors.DefaultSelector()
-ServerSideSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# ServerSideSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4, TCP
+ServerSideSocket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM) # IPv6, TCP
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()
@@ -45,7 +46,6 @@ def service_connection(key, mask):
     # Send
     if mask & selectors.EVENT_WRITE:
         if data.data:
-            print('Parsing:')
             try:
                 if data.data[0] == 100:
                     data.id, status = get_login_status(data.data[1], data.data[2])
@@ -60,12 +60,13 @@ def service_connection(key, mask):
                     print('Search:', data.id, data.addr)
                     status = search_for_index(tree, data.data[1])
                 elif data.data[0] == 104:
-                    print('Chat:', data.id, data.addr)
+                    print('Chat user:', data.id, data.addr)
                     if data.data[1] == 'xXloadXx':
                         status = chat_load(data.id)
                     else:
                         status = chat_save(data.id, data.id, data.data[1])
                 elif data.data[0] == 105:
+                    print('Chat admin:', data.id, data.addr)
                     if data.data[2] == 'xXloadXx':
                         status = chat_load(data.data[1])
                     elif data.data[2] == 'xXlistXx':
@@ -80,6 +81,7 @@ def service_connection(key, mask):
             data.data = None
             
             try:
+                print(f'Send: {pickle.loads(status)}')
                 sock.sendall(status)
             except socket.error as e:
                 print('Cannot sent data to', data.addr)

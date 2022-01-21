@@ -1,4 +1,5 @@
-HOST = '127.0.0.1'
+# HOST = '127.0.0.1'
+HOST = 'phonhay103.hopto.org'
 PORT = 8251
 DIR = 'data'
 MSSV_CHARS = 8
