@@ -1,4 +1,5 @@
-HOST = '127.0.0.1'
+# HOST = '127.0.0.1' # Localhost
+HOST = 'phonhay103.hopto.org' # Internet | noip.com
 PORT = 8251
 DIR = 'data'
 MSSV_CHARS = 8

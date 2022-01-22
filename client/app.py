@@ -11,7 +11,8 @@ from account import *
 st.set_page_config(page_title='STSV', page_icon=':penguin:', layout="wide", initial_sidebar_state="auto", menu_items=None)
 
 if 'socket' not in st.session_state:
-    st.session_state.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # st.session_state.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4, TCP
+    st.session_state.socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM) # IPv6, TCP
     ClientSocket = st.session_state.socket
     try:
         ClientSocket.connect((HOST, PORT))
@@ -41,7 +42,7 @@ def app():
     st.session_state.bg = True
     menus = ['Trang chủ', 'Đổi mật khẩu', 'Tra cứu', 'Tư vấn trực tuyến', 'Đăng xuất']
     guest_menus = ['Trang chủ','Tra cứu', 'Đăng xuất']
-    admin_menus = ['Trang chủ', 'Đổi mật khẩu', 'Quản lý tài khoản', 'Tư vấn trực tuyến', 'Đăng xuất']
+    admin_menus = ['Trang chủ', 'Đổi mật khẩu', 'Tư vấn trực tuyến', 'Đăng xuất']
     if 'logged_in' not in st.session_state:
         st.session_state.logged_in = False
     if 'index' not in st.session_state:
@@ -222,17 +223,9 @@ def app():
                         else:
                             st.warning('Mật khẩu không hợp lệ!')
             # ========================= Change password ========================= #
-            
-            
-            # ========================= Account manage ========================== #
-            elif st.session_state.option == admin_menus[2]:
-                accountManagerContainer.write('Chức năng sẽ được cập nhật trong phiên bản tiếp theo')
-            
-            # ========================= Account manage ========================== #
-
 
             # ============================== Chat ============================== #
-            elif st.session_state.option == admin_menus[3]:
+            elif st.session_state.option == admin_menus[2]:
                 bg.empty()
 
                 # Show chat list
@@ -248,7 +241,7 @@ def app():
                     if status[0] == 110:
                         buttons = [(st.button(lbl), lbl) for lbl in status[1]]
                     else:
-                        st.error("Chức năng không khả dụng")
+                        st.error("Tính năng không khả dụng...")
 
                 # Chat history
                 for button, id in buttons:
@@ -276,23 +269,23 @@ def app():
                             if st.session_state.show_all:
                                 messages = data[1]
                             else:
-                                if len(data[1]) > 10:
-                                    messages = data[1][-10:]
+                                if len(data[1]) > 5:
+                                    messages = data[1][-5:]
                                 else:
                                     messages = data[1]
 
-                            for msg in messages:
-                                msg_id, msg_data = msg.split('@')[0], msg.split('@')[1:]
-                                msg_data = '@'.join(msg_data)
+                            for msg_id, _, msg_data, t in messages:
+                                msg_id = str(msg_id)
                                 if msg_id == ADMIN:
-                                    st.write(f'_**Admin**_: {msg_data}')
+                                    st.write(f'_**Admin**_ ({t}): {msg_data}')
                                 else:
-                                    st.write(f'_**{msg_id}**_: {msg_data}')
+                                    st.write(f'_**{msg_id}**_ ({t}): {msg_data}')
                             st.write('')
 
                             msg = st.text_input('Nhập tin nhắn', placeholder='Aa')
                             btnSend = st.form_submit_button('Gửi')
                             btnShowAll = st.form_submit_button('Xem lịch sử')
+                            btnRemove = st.form_submit_button('Xóa tin nhắn')
 
                             if btnSend:
                                 st.session_state.show_all = False
@@ -311,14 +304,34 @@ def app():
 
                             if btnShowAll:
                                 st.session_state.show_all = True
-                                st.experimental_rerun()   
+                                st.experimental_rerun()
+
+                            if btnRemove:
+                                st.session_state.show_all = False
+                                try:
+                                    ClientSocket.send(pickle.dumps([105, st.session_state.r_id, 'xXremoveXx']))
+                                    status = ClientSocket.recv(1024)
+                                    status = pickle.loads(status)[0]
+                                except:
+                                    st.exception(e)
+                                    status = 500
+
+                                if status == 200:
+                                    st.session_state.r_id = None
+                                    st.success('Xóa tin nhắn thành công')
+                                    time.sleep(1)
+                                    st.experimental_rerun()
+                                else:
+                                    st.write('abc')
+                                    st.warning('Tính năng không khả dụng...')
                     else:
-                        ChatContainer.error("Tính năng không khả dụng!")
+                        ChatContainer.write('xyz')
+                        ChatContainer.error("Tính năng không khả dụng....")
             # ============================== Chat ============================== #
 
 
             # ============================= Log out ============================ #
-            elif st.session_state.option == admin_menus[4]:
+            elif st.session_state.option == admin_menus[3]:
                 data = get_logout_data(st.session_state.id)
                 try:
                     ClientSocket.send(data)
@@ -453,10 +466,10 @@ def app():
                             continue
                 except Exception as e:
                     st.exception(e)
-                    data = [500, 'Error']
+                    data = [500, 'Unknown']
 
                 # Send topic
-                if st.session_state.history is not None:
+                if st.session_state.history is not None and st.session_state.history != DIR:
                     try:
                         ClientSocket.send(pickle.dumps([104, st.session_state.history]))
                         ClientSocket.recv(1024)
@@ -471,19 +484,18 @@ def app():
                         if st.session_state.show_all:
                             messages = data[1]
                         else:
-                            if len(data[1]) > 10:
-                                messages = data[1][-10:]
+                            if len(data[1]) > 5:
+                                messages = data[1][-5:]
                             else:
                                 messages = data[1]
 
-                        for msg in messages:
-                            msg_id, msg_data = msg.split('@')[0], msg.split('@')[1:]
-                            msg_data = '@'.join(msg_data)
+                        for msg_id, _, msg_data, t in messages:
+                            msg_id = str(msg_id)
                             if msg_id == ADMIN:
-                                st.write(f'_**Admin**_: {msg_data}')
+                                st.write(f'_**Admin**_ ({t}): {msg_data}')
                             else:
-                                st.write(f'_**{msg_id}**_: {msg_data}')
-                        st.write('')
+                                st.write(f'_**{msg_id}**_ ({t}): {msg_data}')
+                            st.write('')
 
                         msg = st.text_input('Nhập tin nhắn', placeholder='Aa')
                         btnSend = st.form_submit_button('Gửi')
@@ -502,13 +514,13 @@ def app():
                             if status == 200:
                                 st.experimental_rerun()
                             else:
-                                st.warning('Message không khả dụng!')
+                                st.warning('Message không khả dụng..')
 
                         if btnShowAll:
                             st.session_state.show_all = True
                             st.experimental_rerun()
                 else:
-                    ChatContainer.error("Tính năng không khả dụng!")
+                    ChatContainer.error("Tính năng không khả dụng.")
             # ============================== Chat ============================== #
 
 
