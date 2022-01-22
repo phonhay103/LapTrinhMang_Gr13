@@ -1,4 +1,5 @@
 Đăng ký tiêm vaccine cho sinh viên
+----------------------------------
 
 Để hỗ trợ sinh viên có thể quay trở lại học tập tại trường, Ban chỉ đạo phòng chống Covid của Trường đã liên hệ với các đơn vị về việc tổ chức hỗ trợ tiêm văc-xin cho sinh viên.
 

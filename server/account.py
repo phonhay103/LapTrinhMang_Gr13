@@ -6,7 +6,7 @@ from config import *
 
 def _check_login(id, pw): # Recv
     try:
-        con = sql.connect(DATABASE)
+        con = sql.connect(USER_DB)
         cur = con.cursor()
         query = f"SELECT password FROM user WHERE id = {id}"
         cur.execute(query)
@@ -40,7 +40,7 @@ def _check_change_password(id, new_pw): # Recv
     try:
         new_pw = _get_hash_str(new_pw)
         
-        con = sql.connect(DATABASE)
+        con = sql.connect(USER_DB)
         cur = con.cursor()
         query = f"UPDATE user SET password = '{new_pw}' WHERE id = {id}"
         cur.execute(query)

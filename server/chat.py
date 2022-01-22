@@ -1,25 +1,58 @@
 import pickle
 import os
+import sqlite3 as sql
+import datetime
 
 from config import *
 
 def chat_save(s_id, r_id, msg):
     try:
-        with open(f'{CHAT_DIR}/{r_id}.txt', 'a', encoding='utf8') as f:
-            f.write(f'{s_id}@{msg}\n')
-    except:
+        con = sql.connect(CHAT_DB)
+        cur = con.cursor()
+        query = f"INSERT INTO chat(send_id, recv_id, msg, time) VALUES('{s_id}', '{r_id}', '{msg}', \'{datetime.datetime.today().strftime('%d/%m/%Y %H:%M:%S')}\')"
+        cur.execute(query)
+        con.commit()
+        con.close()
+    except sql.Error as er:
         return pickle.dumps([500, 'Error'])
-        
-    return pickle.dumps([200, 'Success'])
+    else:    
+        return pickle.dumps([200, 'Success'])
 
 def chat_load(id):
-    path = f'{CHAT_DIR}/{id}.txt'
-    if os.path.isfile(path):
-        with open(path, 'r', encoding='utf8') as f:
-            return pickle.dumps([110, f.readlines()])
-    else:
-        return pickle.dumps([110, []])
+    try:
+        con = sql.connect(CHAT_DB)
+        cur = con.cursor()
+        query = f"SELECT * FROM chat WHERE send_id = '{id}' OR recv_id = '{id}'"
+        cur.execute(query)
+        result = cur.fetchall()
+        con.close()
+    except sql.Error as er:
+        return pickle.dumps([500, 'Error'])
+    else:        
+        return pickle.dumps([110, result])
 
 def chat_list():
-    id_list = [id.split('.')[0] for id in os.listdir(CHAT_DIR)]
-    return pickle.dumps([110, id_list])
+    try:
+        con = sql.connect(CHAT_DB)
+        cur = con.cursor()
+        query = f"SELECT DISTINCT(send_id) FROM chat WHERE send_id != '{ADMIN_ID}' ORDER BY time DESC"
+        cur.execute(query)
+        result = [str(i[0]) for i in cur.fetchall()]
+        con.close()
+    except sql.Error as er:
+        return pickle.dumps([110, []])
+    else:
+        return pickle.dumps([110, result])
+
+def chat_remove(id):
+    try:
+        con = sql.connect(CHAT_DB)
+        cur = con.cursor()
+        query = f"DELETE FROM chat WHERE send_id = '{id}' OR recv_id = '{id}'"
+        cur.execute(query)
+        con.commit()
+        con.close()
+    except sql.Error as er:
+        return pickle.dumps([500, 'Error'])
+    else:
+        return pickle.dumps([200, 'Success'])

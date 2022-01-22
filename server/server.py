@@ -48,29 +48,31 @@ def service_connection(key, mask):
         if data.data:
             try:
                 if data.data[0] == 100:
+                    print('Log in:', data.data[1])
                     data.id, status = get_login_status(data.data[1], data.data[2])
-                    print('Log in:', data.id, data.addr)
                 elif data.data[0] == 101:
-                    print('Change Password:', data.id, data.addr)
+                    print('Change Password:', data.id)
                     status = get_change_password_status(data.id, data.data[1], data.data[2])
                 elif data.data[0] == 102:
-                    print('Logout:', data.id, data.addr)
+                    print('Logout:', data.id)
                     data.id, status = get_logout_status(data.id, data.data[1])
                 elif data.data[0] == 103:
-                    print('Search:', data.id, data.addr)
+                    print('Search:', data.id, data.data[1])
                     status = search_for_index(tree, data.data[1])
                 elif data.data[0] == 104:
-                    print('Chat user:', data.id, data.addr)
+                    print('Chat User:', data.id)
                     if data.data[1] == 'xXloadXx':
                         status = chat_load(data.id)
                     else:
                         status = chat_save(data.id, data.id, data.data[1])
                 elif data.data[0] == 105:
-                    print('Chat admin:', data.id, data.addr)
+                    print('Chat Admin:', data.id)
                     if data.data[2] == 'xXloadXx':
                         status = chat_load(data.data[1])
                     elif data.data[2] == 'xXlistXx':
                         status = chat_list()
+                    elif data.data[2] == 'xXremoveXx':
+                        status = chat_remove(data.data[1])
                     else:
                         status = chat_save(ADMIN_ID, data.data[1], data.data[2])
                 else:
@@ -81,8 +83,8 @@ def service_connection(key, mask):
             data.data = None
             
             try:
-                print(f'Send: {pickle.loads(status)}')
                 sock.sendall(status)
+                print('Send:', data.addr, pickle.loads(status))
             except socket.error as e:
                 print('Cannot sent data to', data.addr)
 
