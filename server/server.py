@@ -10,8 +10,8 @@ from chat import *
 
 tree = create_tree()
 sel = selectors.DefaultSelector()
-# ServerSideSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4, TCP
-ServerSideSocket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM) # IPv6, TCP
+ServerSideSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4, TCP
+# ServerSideSocket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM) # IPv6, TCP
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()

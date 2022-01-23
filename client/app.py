@@ -11,8 +11,8 @@ from account import *
 st.set_page_config(page_title='STSV', page_icon=':penguin:', layout="wide", initial_sidebar_state="auto", menu_items=None)
 
 if 'socket' not in st.session_state:
-    # st.session_state.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4, TCP
-    st.session_state.socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM) # IPv6, TCP
+    st.session_state.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4, TCP
+    # st.session_state.socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM) # IPv6, TCP
     ClientSocket = st.session_state.socket
     try:
         ClientSocket.connect((HOST, PORT))

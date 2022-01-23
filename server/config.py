@@ -1,4 +1,4 @@
-HOST = '' # Integer
+HOST = '' # 0.0.0.0
 # HOST = '127.0.0.1' # Localhost
 PORT = 8251
 USER_DB = 'db/users.sqlite3'
