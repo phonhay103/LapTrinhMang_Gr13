@@ -4,15 +4,25 @@ import cv2
 import time
 import pyautogui
 import pickle
+import sys
 
 from config import *
 from account import *
 
 st.set_page_config(page_title='STSV', page_icon=':penguin:', layout="wide", initial_sidebar_state="auto", menu_items=None)
 
+# Ngrok
+if len(sys.argv) > 1:
+    try:
+        HP = sys.argv[1].split('//')[-1].split(':')
+        HOST = HP[0]
+        PORT = int(HP[1])
+    except Exception as e:
+        st.exception(e)
+
 if 'socket' not in st.session_state:
-    # st.session_state.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4, TCP
-    st.session_state.socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM) # IPv6, TCP
+    st.session_state.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4, TCP
+    # st.session_state.socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM) # IPv6, TCP
     ClientSocket = st.session_state.socket
     try:
         ClientSocket.connect((HOST, PORT))

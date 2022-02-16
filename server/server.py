@@ -10,12 +10,12 @@ from chat import *
 
 tree = create_tree()
 sel = selectors.DefaultSelector()
-# ServerSideSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4, TCP
-ServerSideSocket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM) # IPv6, TCP
+ServerSideSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # IPv4, TCP
+# ServerSideSocket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM) # IPv6, TCP
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()
-    print('Accepted connection from', addr)
+    print('Accepted connection from', addr, end='\n\n')
     conn.setblocking(False)
     data = types.SimpleNamespace(addr=addr, data=None, id=None)
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
@@ -35,11 +35,11 @@ def service_connection(key, mask):
         if recv_data:
             try:
                 data.data = pickle.loads(recv_data)
-                print('Receiving:', data.data, data.addr)
+                print('Receiving:', data.data, data.addr, end='\n\n')
             except:
                 data.data = [500, "Error"]
         else:
-            print('Closing connection to', data.addr)
+            print('Closing connection to', data.addr, end='\n\n')
             sel.unregister(sock)
             sock.close()
 
@@ -48,25 +48,25 @@ def service_connection(key, mask):
         if data.data:
             try:
                 if data.data[0] == 100:
-                    print('Log in:', data.data[1])
+                    print('Log in:', data.data[1], end='\n\n')
                     data.id, status = get_login_status(data.data[1], data.data[2])
                 elif data.data[0] == 101:
-                    print('Change Password:', data.id)
+                    print('Change Password:', data.id, end='\n\n')
                     status = get_change_password_status(data.id, data.data[1], data.data[2])
                 elif data.data[0] == 102:
-                    print('Logout:', data.id)
+                    print('Logout:', data.id, end='\n\n')
                     data.id, status = get_logout_status(data.id, data.data[1])
                 elif data.data[0] == 103:
-                    print('Search:', data.id, data.data[1])
+                    print('Search:', data.id, data.data[1], end='\n\n')
                     status = search_for_index(tree, data.data[1])
                 elif data.data[0] == 104:
-                    print('Chat User:', data.id)
+                    print('Chat User:', data.id, end='\n\n')
                     if data.data[1] == 'xXloadXx':
                         status = chat_load(data.id)
                     else:
                         status = chat_save(data.id, data.id, data.data[1])
                 elif data.data[0] == 105:
-                    print('Chat Admin:', data.id)
+                    print('Chat Admin:', data.id, end='\n\n')
                     if data.data[2] == 'xXloadXx':
                         status = chat_load(data.data[1])
                     elif data.data[2] == 'xXlistXx':
@@ -84,9 +84,9 @@ def service_connection(key, mask):
             
             try:
                 sock.sendall(status)
-                print('Send:', data.addr, pickle.loads(status))
+                print('Send:', data.addr, pickle.loads(status), end='\n\n')
             except socket.error as e:
-                print('Cannot sent data to', data.addr)
+                print('Cannot sent data to', data.addr, end='\n\n')
 
 try:
     ServerSideSocket.bind((HOST, PORT))
@@ -94,7 +94,7 @@ except socket.error as e:
     print(e)
     exit()
 
-print('Listening on', (HOST, PORT))
+print('Listening on', (HOST, PORT), end='\n\n')
 ServerSideSocket.listen()
 ServerSideSocket.setblocking(False)
 sel.register(ServerSideSocket, selectors.EVENT_READ, data=None)

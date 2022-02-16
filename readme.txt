@@ -1,7 +1,8 @@
-cd C:\Users\Nhay103\Documents\GitHub\STSV\server
-conda activate rectinet
+# Server
 python server.py
 
-cd C:\Users\Nhay103\Documents\GitHub\STSV\client
-conda activate rectinet
-streamlit run app.py
+# Client
+streamlit run app.py <ngrok>
+
+# Ngrok
+ngrok tcp 8251
